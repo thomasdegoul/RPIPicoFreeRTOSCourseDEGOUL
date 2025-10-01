@@ -11,6 +11,7 @@ This project demonstrates how to blink an external LED using FreeRTOS on the Ras
 ## File Descriptions
 
 ### 1. main.cpp
+** CHANGES FROM THIS WEEK** I CHANGE THE DELAY IN THE main.cpp
 **Purpose:** Main application code for blinking an LED using FreeRTOS.
 **Details:**
 - Initializes GPIO PAD 0 as an output.
@@ -82,3 +83,4 @@ This project demonstrates how to blink an external LED using FreeRTOS on the Ras
    ```bash
    mkdir build && cd build
    cmake .. && make
+   
