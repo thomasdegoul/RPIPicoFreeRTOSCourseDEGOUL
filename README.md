@@ -1,41 +1,84 @@
-# RPIPicoFreeRTOSCourse
-Course Repository for Udemy Course: [FreeRTOS on Raspberry PI PICO](https://www.udemy.com/course/draft/4868484/?referralCode=C5A9A19C93919A9DA294)
+# BlinkLEDExt: FreeRTOS LED Blinking on Raspberry Pi Pico
+# Files modified and documented by Thomas DEGOUL
 
-16 Examples of which 15 demonstrate FreeRTOS features on the Raspberry PI Pico or RP2040 board. One of which that focuses on the SDK multicore API functions.
+---
 
-## 2 Pico Setup
+## Overview
+This project demonstrates how to blink an external LED using FreeRTOS on the Raspberry Pi Pico. The LED is connected to GPIO PAD 0. The project uses FreeRTOS tasks for scheduling and the Pico SDK for hardware abstraction.
 
-+ BlinkLEDExt: Blink an external LED on GPIO using a function approach.
+---
 
-## 4 Tasks
+## File Descriptions
 
-+ Blink Ext: Blink an external LED on GPIO 0, encapsulating the task within a Class.
-+ MultiBlink: Blink multiple LEDs using different task priority
-+ BlinkPriority: Use priority with tasks that create CPU workload
-+ BlinkAssignment: Explore priority
+### 1. main.cpp
+**Purpose:** Main application code for blinking an LED using FreeRTOS.
+**Details:**
+- Initializes GPIO PAD 0 as an output.
+- Creates a FreeRTOS task (`mainTask`) to toggle the LED every 500ms.
+- Uses `vTaskDelay` for timing.
+- Initializes USB stdio for debug output.
+- Starts the FreeRTOS scheduler on core 0.
 
+**Key Functions:**
+- `mainTask`: Toggles the LED state.
+- `vLaunch`: Creates the FreeRTOS task and starts the scheduler.
+- `main`: Initializes hardware and launches the FreeRTOS application.
 
-## 5 Semaphore
+---
 
-+ SharedLED: Defined shared LED which will be used by two blink LED pair objects. Creating a contention scenario that requires semaphores. 
-+ LimitWorkers: Use count semaphore to limit the number of active tasks using a resource
-+ AssignmentLimitWorkers: Explore counting semaphores in assignment
-+ BlinkWorker: Create a scenario of workers that will blink out of sync
-+ TaskNotification: Use task notification as two semaphores to synchronize the two tasks
+### 2. CMakeLists.txt
+**Purpose:** Main build configuration file for the project.
+**Details:**
+- Sets the project name to `BlinkLEDExt`.
+- Includes the Pico SDK and FreeRTOS.
+- Links required libraries: `pico_stdlib` and `FreeRTOS-Kernel-Heap4`.
+- Configures the build for dual-core RP2040.
+- Generates `.uf2`, `.bin`, and `.hex` output files.
+- Enables USB stdio and disables UART stdio.
+- Uses `picoDeploy.sh` for packaging the release.
 
+---
 
-## 6 Queue
+### 3. FreeRTOS_Kernel_import.cmake
+**Purpose:** Locates and imports the FreeRTOS Kernel.
+**Details:**
+- Searches for the FreeRTOS Kernel path using environment variables or relative paths.
+- Adds the FreeRTOS RP2040 port as a subdirectory to the build system.
+- Ensures the FreeRTOS Kernel is available for linking.
 
-+ CountLed: Display a binary value on four LEDs (0 to 15) that is being sent to the task via a queue
-+ AssignmentQueue: Assignment question to use queues
+---
 
-## 7 MessageBuf
+### 4. pico_sdk_import.cmake
+**Purpose:** Locates and imports the Raspberry Pi Pico SDK.
+**Details:**
+- Searches for the Pico SDK path using environment variables or fetches it from Git.
+- Includes the Pico SDK initialization script.
+- Ensures the Pico SDK is available for the build process.
 
-+ JsonCmds: Use of message buffer to send a JSON strong to a task. Decode the JSON and display the contained value on four LEDs
-+ SerialCmds: Two Pico communicating together over UART to display the same value on four LEDs in sync
+---
 
-## 8 Multicore
+### 5. FreeRTOS_Kernel/ (Directory)
+**Purpose:** Contains FreeRTOS configuration files for the RP2040 port.
+**Details:**
+- Includes the FreeRTOS kernel source and port-specific files.
+- Configuration files are located in `port/FreeRTOS-Kernel/`.
 
-+ sdKMulticore: Use both cores and send a random number from core 0 to core 1 using the SDK FIFO queue
-+ FreeRTOSSMP: Use SMP to run tasks across both cores and some associated with single core
+---
 
+## Build Instructions
+
+### Prerequisites
+- Raspberry Pi Pico SDK
+- FreeRTOS Kernel (Heap4 configuration)
+- CMake (version 3.12 or higher)
+- GCC toolchain for ARM Cortex-M0+
+
+### Steps
+1. Set environment variables:
+   - `PICO_SDK_PATH`: Path to the Pico SDK.
+   - `FREERTOS_KERNEL_PATH`: Path to the FreeRTOS Kernel.
+
+2. Build the project:
+   ```bash
+   mkdir build && cd build
+   cmake .. && make
