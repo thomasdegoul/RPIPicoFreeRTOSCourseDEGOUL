@@ -1,8 +1,8 @@
 /***
  * Demo program to flash an LED attached to GPIO PAD 0.
  * Uses FreeRTOS Task
- * Jon Durrant
- * 15-Aug-2022
+ * Jon Durrant and modified by THOMAS DEGOUL 
+ * 08/10/2025
  */
 
 
@@ -19,7 +19,7 @@
 #define TASK_PRIORITY		( tskIDLE_PRIORITY + 1UL )
 
 //LED PAD to use
-#define LED_PAD				0
+#define LED_PAD				3
 
 
 void runTimeStats(   ){
