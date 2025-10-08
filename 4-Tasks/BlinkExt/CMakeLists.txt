@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Change your executable name to something creative!
-set(NAME Blink) # <-- Name your project/executable here!
+set(NAME Blink) # <-- THOMAS DEGOUL F14218804
 
 include(pico_sdk_import.cmake)
 
