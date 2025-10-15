@@ -76,3 +76,33 @@ Build Steps:
 
 8. License
 MIT License (unless specified otherwise in dependencies).
+
+Here's a concise section to add to your README for the **BlinkPriority** project, explaining the priority change:
+
+9. High Priority Test: BlinkAgent Dominance
+
+
+
+Code Change
+```cpp
+blink.start("Blink", TASK_PRIORITY + 3);  // Highest priority
+worker1.start("Worker 1", TASK_PRIORITY + 1);
+worker2.start("Worker 2", TASK_PRIORITY + 2);
+```
+
+Expected Results:
+- LED 0 (BlinkAgent): Blinks smoothly (highest priority)
+- LEDs 2 & 3: Blink erratically or slowly (lower priorities)
+- Serial Output: Shows BlinkAgent dominating CPU time
+
+Why It Matters:
+This illustrates how FreeRTOS's preemptive scheduler gives highest-priority tasks preferential access to CPU resources, which is crucial for time-critical operations but can starve lower-priority tasks.
+
+How to Test:
+1. Use the modified `main.cpp` provided
+2. Flash to Pico and observe:
+   - Consistent blinking of LED 0
+   - Irregular blinking of LEDs 2 and 3
+   - Serial output confirming priority distribution
+
+
