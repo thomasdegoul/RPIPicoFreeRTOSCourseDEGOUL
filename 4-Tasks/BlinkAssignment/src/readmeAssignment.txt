@@ -77,4 +77,26 @@ Build Steps:
  8. License
 MIT License (unless specified otherwise in dependencies).
 
----
+
+
+9. Priority Change: BlinkAgent with Highest Priority
+
+:
+
+Code Change
+In `main.cpp`, update `mainTask()`:
+```cpp
+blink.start("Blink", TASK_PRIORITY + 3);  // Highest priority
+worker1.start("Worker 1", TASK_PRIORITY + 1);
+worker2.start("Worker 2", TASK_PRIORITY + 2);
+```
+
+Expected Behavior
+- LED 0 (BlinkAgent): Blinks smoothly (highest priority, preempts others).
+- LEDs 2 & 3 (Worker 1 & 2)**: Blink **erratically or slowly** (starved of CPU time).
+- Serial Output: Shows `BlinkAgent` dominating CPU usage.
+
+Why?
+FreeRTOS is preemptive: the highest-priority ready task always runs first. Use this for time-critical tasks, but avoid for fair CPU sharing.
+
+-
