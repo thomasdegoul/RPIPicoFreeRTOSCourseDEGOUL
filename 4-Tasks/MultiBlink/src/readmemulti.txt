@@ -67,14 +67,28 @@ Build Steps:
   Task: 5    cPri:4    bPri:4    hw:180    Worker 3
   Task: 6    cPri:5    bPri:5    hw:180    Worker 4
   HEAP avl: 12345, blocks 10, alloc: 5, free: 2
-  ```
+  
 
 
 7. Customization
-- Change LED pins: Edit `LED_PAD`, `LED1_PAD`, etc. in `main.cpp`.
-- Adjust priorities: Modify `TASK_PRIORITY` values in `mainTask()`.
-- Add more tasks: Extend `vLaunch()` in `main.cpp`.
+- Change LED pins: Edit LED_PAD, LED1_PAD, etc. in main.cpp
+- Adjust priorities: Modify TASK_PRIORITY values in mainTask().
+- Add more tasks: Extend vLaunch() in main.cpp.
 
  8. License
 MIT License (unless specified otherwise in dependencies).
+
+9. Changes & Extensions (2025)
+Author:Thomas DEGOUL
+Date: 22-Oct-2025
+
+- Added 3 LEDs (GPIO 6, 7, 8), each controlled by a new BlinkAgent task with incremented priorities.
+- Hardware: 3 extra LEDs + 220Ω resistors.
+- Wiring:
+  - LED6: GPIO 6 → resistor → GND
+  - LED7: GPIO 7 → resistor → GND
+  - LED8: GPIO 8 → resistor → GND
+- Code: Updated main.cpp with new pin definitions and task starts.
+- Output: Serial monitor now shows 8 tasks, including Worker 5, Worker 6, and Worker 7.
+- Customization: Edit pin definitions or priorities in mainTask() to add more LEDs or adjust behavior.
 
