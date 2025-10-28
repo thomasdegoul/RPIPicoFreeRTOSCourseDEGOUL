@@ -68,3 +68,4 @@ The system ensures no more than 2 LEDs are active at the same time.
 -Required changes:
 Add a 4th BlinkWorker for GPIO 4.
 Create the semaphore with xSemaphoreCreateCounting(2, 2).
+In reality, with very fast response times, LED blinking may appear to overlap slightly due to human perception and task scheduling timing.
