@@ -92,3 +92,6 @@ Date: 22-Oct-2025
 - Output: Serial monitor now shows 8 tasks, including Worker 5, Worker 6, and Worker 7.
 - Customization: Edit pin definitions or priorities in mainTask() to add more LEDs or adjust behavior.
 
+10) QUESTION MID TERM
+You can create up to ~450 tasks theoretically on RP2040 with FreeRTOS, but in practice, aim for <20 tasks for stable operation. Your 8-LED demo is well within limits.
+
