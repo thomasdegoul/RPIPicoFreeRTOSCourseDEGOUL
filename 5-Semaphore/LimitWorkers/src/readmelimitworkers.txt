@@ -58,3 +58,13 @@ Flash the `.uf2` file to the Pico.
 
 8. License
 MIT License (unless specified otherwise in dependencies).
+
+9. What If We Use 4 Workers and Only 2 Tokens?
+
+If you modify the demo to use 4 BlinkWorker tasks but limit the semaphore to 2 tokens:
+Only 2 LEDs can blink simultaneously.
+The other 2 workers will block until a token is released.
+The system ensures no more than 2 LEDs are active at the same time.
+-Required changes:
+Add a 4th BlinkWorker for GPIO 4.
+Create the semaphore with xSemaphoreCreateCounting(2, 2).
