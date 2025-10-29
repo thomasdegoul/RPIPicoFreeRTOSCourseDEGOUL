@@ -1,7 +1,7 @@
 /**
  * Demo program to flash 5 LEDs (1 BlinkAgent + 4 BlinkWorkers) using FreeRTOS tasks and a counting semaphore.
  * The semaphore is initialized with 2 tokens, so only 2 workers can blink their LEDs simultaneously.
- * Thomas DEGOUL (F14218804)
+ * Thomas DEGOUL (F14218804) from jon durrant's code
  * 28-Oct-2025
  */
 #include "pico/stdlib.h"
