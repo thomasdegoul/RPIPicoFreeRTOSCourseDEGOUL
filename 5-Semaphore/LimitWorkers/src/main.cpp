@@ -10,7 +10,7 @@
 #include "semphr.h"
 #include <stdio.h>
 
-// Classes pour gérer les LEDs (à adapter selon tes fichiers BlinkAgent.h/BlinkWorker.h)
+// Class to manage free-blinking LED
 class BlinkAgent {
 public:
     BlinkAgent(uint led_pad) : led_pad(led_pad) {
@@ -33,6 +33,7 @@ private:
     uint led_pad;
 };
 
+// Class to manage semaphore-controlled LEDs
 class BlinkWorker {
 public:
     BlinkWorker(uint led_pad) : led_pad(led_pad), sem(NULL) {
@@ -43,21 +44,21 @@ public:
     static void task(void *params) {
         BlinkWorker *worker = (BlinkWorker *)params;
         while (true) {
-            // Attend un token disponible
-            printf("%s: En attente d'un token...\n", pcTaskGetName(NULL));
+            // Wait for an available token
+            printf("%s: Waiting for token...\n", pcTaskGetName(NULL));
             xSemaphoreTake(worker->sem, portMAX_DELAY);
-            printf("%s: Token acquis ! LED ON\n", pcTaskGetName(NULL));
+            printf("%s: Token acquired! LED ON\n", pcTaskGetName(NULL));
 
-            // Allume la LED
+            // Turn LED on
             gpio_put(worker->led_pad, 1);
-            vTaskDelay(1000);  // LED allumée 1 seconde
+            vTaskDelay(1000);  // LED on for 1 second
 
-            // Éteint la LED
+            // Turn LED off
             gpio_put(worker->led_pad, 0);
-            printf("%s: Token libéré. LED OFF\n", pcTaskGetName(NULL));
+            printf("%s: Token released. LED OFF\n", pcTaskGetName(NULL));
             xSemaphoreGive(worker->sem);
 
-            vTaskDelay(500);  // Délai avant la prochaine tentative
+            vTaskDelay(500);  // Delay before next attempt
         }
     }
     void start(const char *name, UBaseType_t priority) {
@@ -68,9 +69,10 @@ private:
     SemaphoreHandle_t sem;
 };
 
-// Priorité standard
+// Standard task priority
 #define TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
-// GPIOs pour les LEDs
+
+// LED GPIO pins
 #define LED_PAD      0
 #define LED1_PAD     2
 #define LED2_PAD     3
@@ -80,14 +82,14 @@ private:
 void runTimeStats() {
     TaskStatus_t *pxTaskStatusArray;
     UBaseType_t uxArraySize = uxTaskGetNumberOfTasks();
-    printf("\n--- État des tâches ---\n");
-    printf("Nombre de tâches: %d\n", uxArraySize);
+    printf("\n--- Task Status ---\n");
+    printf("Number of tasks: %d\n", uxArraySize);
 
     pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
     if (pxTaskStatusArray != NULL) {
         uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, NULL);
         for (UBaseType_t i = 0; i < uxArraySize; i++) {
-            printf("Tâche: %s \t Pri:%d \t Stack restante:%d\n",
+            printf("Task: %s \t Priority:%d \t Remaining stack:%d\n",
                    pxTaskStatusArray[i].pcTaskName,
                    pxTaskStatusArray[i].uxCurrentPriority,
                    pxTaskStatusArray[i].usStackHighWaterMark);
@@ -97,25 +99,25 @@ void runTimeStats() {
 
     HeapStats_t heapStats;
     vPortGetHeapStats(&heapStats);
-    printf("HEAP disponible: %d octets\n", heapStats.xAvailableHeapSpaceInBytes);
+    printf("Available HEAP: %d bytes\n", heapStats.xAvailableHeapSpaceInBytes);
 }
 
 void mainTask(void *params) {
-    // 1 BlinkAgent (clignote librement) + 4 BlinkWorkers (limités par le sémaphore)
+    // 1 free-blinking LED + 4 semaphore-controlled LEDs
     BlinkAgent blink(LED_PAD);
     BlinkWorker worker1(LED1_PAD);
     BlinkWorker worker2(LED2_PAD);
     BlinkWorker worker3(LED3_PAD);
     BlinkWorker worker4(LED4_PAD);
 
-    // Crée un sémaphore comptant avec 2 tokens max (initialisés à 2)
+    // Create counting semaphore with max 2 tokens (initialized to 2)
     SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
     worker1.setSemaphore(sem);
     worker2.setSemaphore(sem);
     worker3.setSemaphore(sem);
     worker4.setSemaphore(sem);
 
-    printf("Démarrage des tâches avec 4 workers et 2 tokens...\n");
+    printf("Starting tasks with 4 workers and 2 tokens...\n");
     blink.start("BlinkAgent", TASK_PRIORITY);
     worker1.start("Worker1", TASK_PRIORITY);
     worker2.start("Worker2", TASK_PRIORITY);
@@ -137,7 +139,7 @@ void vLaunch() {
 int main() {
     stdio_init_all();
     sleep_ms(2000);
-    printf("GO: Test du sémaphore comptant (4 workers, 2 tokens)\n");
+    printf("GO: Counting semaphore test (4 workers, 2 tokens)\n");
     vLaunch();
     return 0;
 }
