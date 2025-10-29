@@ -1,6 +1,7 @@
 /**
- * Demo program to flash LEDs attached to GPIO PADs using FreeRTOS tasks and a semaphore.
- * Jon Durrant (adapted)
+ * Demo program to flash 5 LEDs (1 BlinkAgent + 4 BlinkWorkers) using FreeRTOS tasks and a counting semaphore.
+ * The semaphore is initialized with 2 tokens, so only 2 workers can blink their LEDs simultaneously.
+ * Thomas DEGOUL (F14218804)
  * 28-Oct-2025
  */
 #include "pico/stdlib.h"
@@ -8,122 +9,135 @@
 #include "task.h"
 #include "semphr.h"
 #include <stdio.h>
-#include "BlinkAgent.h"
-#include "BlinkWorker.h"
 
-// Standard Task priority
-#define TASK_PRIORITY        ( tskIDLE_PRIORITY + 1UL )
-// LED PADs to use
-#define LED_PAD              0
-#define LED1_PAD             2
-#define LED2_PAD             3
-#define LED3_PAD             4
-#define LED4_PAD             5
+// Classes pour gérer les LEDs (à adapter selon tes fichiers BlinkAgent.h/BlinkWorker.h)
+class BlinkAgent {
+public:
+    BlinkAgent(uint led_pad) : led_pad(led_pad) {
+        gpio_init(led_pad);
+        gpio_set_dir(led_pad, GPIO_OUT);
+    }
+    static void task(void *params) {
+        BlinkAgent *agent = (BlinkAgent *)params;
+        while (true) {
+            gpio_put(agent->led_pad, 1);
+            vTaskDelay(500);
+            gpio_put(agent->led_pad, 0);
+            vTaskDelay(500);
+        }
+    }
+    void start(const char *name, UBaseType_t priority) {
+        xTaskCreate(task, name, 256, this, priority, NULL);
+    }
+private:
+    uint led_pad;
+};
+
+class BlinkWorker {
+public:
+    BlinkWorker(uint led_pad) : led_pad(led_pad), sem(NULL) {
+        gpio_init(led_pad);
+        gpio_set_dir(led_pad, GPIO_OUT);
+    }
+    void setSemaphore(SemaphoreHandle_t s) { sem = s; }
+    static void task(void *params) {
+        BlinkWorker *worker = (BlinkWorker *)params;
+        while (true) {
+            // Attend un token disponible
+            printf("%s: En attente d'un token...\n", pcTaskGetName(NULL));
+            xSemaphoreTake(worker->sem, portMAX_DELAY);
+            printf("%s: Token acquis ! LED ON\n", pcTaskGetName(NULL));
+
+            // Allume la LED
+            gpio_put(worker->led_pad, 1);
+            vTaskDelay(1000);  // LED allumée 1 seconde
+
+            // Éteint la LED
+            gpio_put(worker->led_pad, 0);
+            printf("%s: Token libéré. LED OFF\n", pcTaskGetName(NULL));
+            xSemaphoreGive(worker->sem);
+
+            vTaskDelay(500);  // Délai avant la prochaine tentative
+        }
+    }
+    void start(const char *name, UBaseType_t priority) {
+        xTaskCreate(task, name, 256, this, priority, NULL);
+    }
+private:
+    uint led_pad;
+    SemaphoreHandle_t sem;
+};
+
+// Priorité standard
+#define TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
+// GPIOs pour les LEDs
+#define LED_PAD      0
+#define LED1_PAD     2
+#define LED2_PAD     3
+#define LED3_PAD     4
+#define LED4_PAD     5
 
 void runTimeStats() {
     TaskStatus_t *pxTaskStatusArray;
-    volatile UBaseType_t uxArraySize, x;
-    unsigned long ulTotalRunTime;
+    UBaseType_t uxArraySize = uxTaskGetNumberOfTasks();
+    printf("\n--- État des tâches ---\n");
+    printf("Nombre de tâches: %d\n", uxArraySize);
 
-    // Get number of tasks
-    uxArraySize = uxTaskGetNumberOfTasks();
-    printf("Number of tasks %d\n", uxArraySize);
-
-    // Allocate a TaskStatus_t structure for each task.
-    pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
-    if( pxTaskStatusArray != NULL ) {
-        // Generate raw status information about each task.
-        uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
-
-        // Print stats
-        for( x = 0; x < uxArraySize; x++ ) {
-            printf("Task: %d \t cPri:%d \t bPri:%d \t hw:%d \t%s\n",
-                pxTaskStatusArray[ x ].xTaskNumber,
-                pxTaskStatusArray[ x ].uxCurrentPriority,
-                pxTaskStatusArray[ x ].uxBasePriority,
-                pxTaskStatusArray[ x ].usStackHighWaterMark,
-                pxTaskStatusArray[ x ].pcTaskName
-            );
+    pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
+    if (pxTaskStatusArray != NULL) {
+        uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, NULL);
+        for (UBaseType_t i = 0; i < uxArraySize; i++) {
+            printf("Tâche: %s \t Pri:%d \t Stack restante:%d\n",
+                   pxTaskStatusArray[i].pcTaskName,
+                   pxTaskStatusArray[i].uxCurrentPriority,
+                   pxTaskStatusArray[i].usStackHighWaterMark);
         }
-        // Free array
-        vPortFree( pxTaskStatusArray );
-    } else {
-        printf("Failed to allocate space for stats\n");
+        vPortFree(pxTaskStatusArray);
     }
 
-    // Get heap allocation information
     HeapStats_t heapStats;
     vPortGetHeapStats(&heapStats);
-    printf("HEAP avl: %d, blocks %d, alloc: %d, free: %d\n",
-        heapStats.xAvailableHeapSpaceInBytes,
-        heapStats.xNumberOfFreeBlocks,
-        heapStats.xNumberOfSuccessfulAllocations,
-        heapStats.xNumberOfSuccessfulFrees
-    );
+    printf("HEAP disponible: %d octets\n", heapStats.xAvailableHeapSpaceInBytes);
 }
 
-/**
- * Main task to blink external LEDs using workers and a semaphore.
- * @param params - unused
- */
 void mainTask(void *params) {
+    // 1 BlinkAgent (clignote librement) + 4 BlinkWorkers (limités par le sémaphore)
     BlinkAgent blink(LED_PAD);
     BlinkWorker worker1(LED1_PAD);
     BlinkWorker worker2(LED2_PAD);
     BlinkWorker worker3(LED3_PAD);
     BlinkWorker worker4(LED4_PAD);
 
-    // Create a counting semaphore with a maximum count of 2 and initial count of 2
+    // Crée un sémaphore comptant avec 2 tokens max (initialisés à 2)
     SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
-
-    // Assign the semaphore to each worker
     worker1.setSemaphore(sem);
     worker2.setSemaphore(sem);
     worker3.setSemaphore(sem);
     worker4.setSemaphore(sem);
 
-    printf("Main task started\n");
+    printf("Démarrage des tâches avec 4 workers et 2 tokens...\n");
+    blink.start("BlinkAgent", TASK_PRIORITY);
+    worker1.start("Worker1", TASK_PRIORITY);
+    worker2.start("Worker2", TASK_PRIORITY);
+    worker3.start("Worker3", TASK_PRIORITY);
+    worker4.start("Worker4", TASK_PRIORITY);
 
-    // Start all tasks
-    blink.start("Blink", TASK_PRIORITY);
-    worker1.start("Worker 1", TASK_PRIORITY);
-    worker2.start("Worker 2", TASK_PRIORITY);
-    worker3.start("Worker 3", TASK_PRIORITY);
-    worker4.start("Worker 4", TASK_PRIORITY);
-
-    while (true) { // Loop forever
+    while (true) {
         runTimeStats();
         vTaskDelay(3000);
     }
 }
 
-/**
- * Launch the tasks and scheduler
- */
-void vLaunch( void ) {
-    // Start main task
+void vLaunch() {
     TaskHandle_t task;
     xTaskCreate(mainTask, "MainThread", 500, NULL, TASK_PRIORITY, &task);
-
-    // Start the tasks and timer running.
     vTaskStartScheduler();
 }
 
-/**
- * Main
- * @return
- */
-int main( void ) {
-    // Setup serial over USB and give a few seconds to settle before we start
+int main() {
     stdio_init_all();
     sleep_ms(2000);
-    printf("GO\n");
-
-    // Start tasks and scheduler
-    const char *rtos_name = "FreeRTOS";
-    printf("Starting %s on core 0:\n", rtos_name);
+    printf("GO: Test du sémaphore comptant (4 workers, 2 tokens)\n");
     vLaunch();
-
     return 0;
 }
-
