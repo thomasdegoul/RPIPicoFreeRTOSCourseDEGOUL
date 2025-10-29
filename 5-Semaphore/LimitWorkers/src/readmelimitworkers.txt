@@ -65,7 +65,13 @@ If you modify the demo to use 4 BlinkWorker tasks but limit the semaphore to 2 t
 Only 2 LEDs can blink simultaneously.
 The other 2 workers will block until a token is released.
 The system ensures no more than 2 LEDs are active at the same time.
+
 -Required changes:
-Add a 4th BlinkWorker for GPIO 4.
-Create the semaphore with xSemaphoreCreateCounting(2, 2).
-In reality, with very fast response times, LED blinking may appear to overlap slightly due to human perception and task scheduling timing.
+
+1. Added semaphore (2 tokens max) to limit concurrent LED access.
+2. Modified BlinkWorker to acquire/release tokens.
+3. Added logs to track token status.
+4. Increased workers from 2 to 4.
+5. Extended LED-on time to 1s for clarity.
+
+Result: Only 2 of 4 worker LEDs light simultaneously.
