@@ -63,4 +63,15 @@ Prerequisites:
 - The `runTimeStats` function prints information about task status, stack usage, and memory.
 
 
+8.The `main` file was updated to enable asynchronous LED pattern control using a FreeRTOS queue:
+
+1. Added a FreeRTOS queue (`xLEDQueue`) to send 4-bit LED patterns from `mainTask` to `CounterAgent`.
+2. Modified `mainTask` to:
+   - Create the queue (`xLEDQueue = xQueueCreate(5, sizeof(LEDCommand))`).
+   - Send a random 4-bit pattern to `CounterAgent` every 3 seconds via the queue (`xQueueSend`).
+3. Updated `vLaunch` to initialize the queue before starting tasks.
+4. Result: `CounterAgent` blinks the LEDs for 1 second based on the received pattern, while `mainTask` continues generating new patterns every 3 seconds.
+The mainTask generates a random 4-bit pattern every 3 seconds and sends it to the CounterAgent via the FreeRTOS queue.
+
+This ensures non-blocking, thread-safe communication between tasks.
 
