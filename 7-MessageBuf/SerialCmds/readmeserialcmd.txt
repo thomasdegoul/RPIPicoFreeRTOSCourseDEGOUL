@@ -17,7 +17,7 @@ The following software agents are used:
 
 2\. Hardware Requirements
 
-  - Raspberry Pi Pico board (TWO required for Section 9)
+  - Raspberry Pi Pico board (TWO required )
   - 5 external LEDs + 220 Ohm current-limiting resistors
   - Jumper wires
 
