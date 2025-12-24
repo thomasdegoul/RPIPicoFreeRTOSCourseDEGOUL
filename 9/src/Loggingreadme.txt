@@ -1,8 +1,7 @@
-/***
- * AssignmentQueue - FreeRTOS Logging Framework Demo for Raspberry Pi Pico
- * * Author: Jon Durrant (adapted by Gemini)
- * Date: February 5, 2025
- ***/
+ AssignmentQueue - FreeRTOS Logging Framework Demo for Raspberry Pi Pico
+Author: Jon Durrant (adapted by Gemini)
+Date: February 5, 2025
+
 
 1. Overview
 
@@ -12,40 +11,40 @@ The program periodically outputs detailed statistics regarding task states, stac
 
 2. Hardware Requirements
 
-* Raspberry Pi Pico board.
-* 1 External LED connected to GPIO 0 (LED_PAD).
-* 1 Current-limiting resistor (e.g., 220Ω).
-* Jumper wires and breadboard.
-* USB Cable for power and Serial UART monitoring.
+ Raspberry Pi Pico board.
+ 1 External LED connected to GPIO 0 (LED_PAD).
+ 1 Current-limiting resistor (e.g., 220Ω).
+ Jumper wires and breadboard.
+ USB Cable for power and Serial UART monitoring.
 
 Wiring:
-* LED Anode: Connected to GPIO 0.
-* LED Cathode: Connected to GND via the resistor.
+ LED Anode: Connected to GPIO 0.
+ LED Cathode: Connected to GND via the resistor.
 
 3. Software Dependencies
 
-* Pico SDK (latest version).
-* FreeRTOS-Kernel (configured for RP2040).
-* CMake (version 3.12 or later).
-* C++17-compatible compiler.
-* Custom Agent headers: BlinkAgent.h, LogAgentA.h, LogAgentB.h.
+ Pico SDK (latest version).
+ FreeRTOS-Kernel (configured for RP2040).
+ CMake (version 3.12 or later).
+ C++17-compatible compiler.
+ Custom Agent headers: BlinkAgent.h, LogAgentA.h, LogAgentB.h.
 
 4. Key Features
 
-* Agent-Oriented Architecture: Uses C++ classes (BlinkAgent, LogAgentA, LogAgentB) to encapsulate FreeRTOS task logic.
-* Concurrent Multitasking: Four distinct tasks (MainThread + 3 Agents) running in parallel under the FreeRTOS priority scheduler.
-* Real-Time Runtime Statistics: 
+ Agent-Oriented Architecture: Uses C++ classes (BlinkAgent, LogAgentA, LogAgentB) to encapsulate FreeRTOS task logic.
+ Concurrent Multitasking: Four distinct tasks (MainThread + 3 Agents) running in parallel under the FreeRTOS priority scheduler.
+ Real-Time Runtime Statistics: 
     - Monitors Task IDs and Names.
     - Tracks Current and Base Priorities.
     - Stack High Water Mark: Displays the minimum free stack space remaining for each task to prevent overflows.
-* Heap Monitoring: Detailed reporting of available heap space, number of free blocks, and successful allocation/free cycles via vPortGetHeapStats.
-* USB Serial Output: Real-time system health monitoring at 5-second intervals.
+ Heap Monitoring: Detailed reporting of available heap space, number of free blocks, and successful allocation/free cycles via vPortGetHeapStats.
+ USB Serial Output: Real-time system health monitoring at 5-second intervals.
 
 5. How to Build and Run
 
 Prerequisites:
-* Ensure PICO_SDK_PATH is set in your environment.
-* Ensure the FreeRTOS-Kernel and Agent source files are in the project include path.
+ Ensure PICO_SDK_PATH is set in your environment.
+ Ensure the FreeRTOS-Kernel and Agent source files are in the project include path.
 
 Build Steps:
 1. Create and navigate to a build directory:
