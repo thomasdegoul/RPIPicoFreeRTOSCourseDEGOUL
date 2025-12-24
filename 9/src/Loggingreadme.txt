@@ -1,5 +1,5 @@
  AssignmentQueue - FreeRTOS Logging Framework Demo for Raspberry Pi Pico
-Author: Jon Durrant (adapted by Gemini)
+Author: Jon Durrant (adapted by DEGOUL Thomas
 Date: February 5, 2025
 
 
