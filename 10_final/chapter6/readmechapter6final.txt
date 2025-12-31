@@ -44,8 +44,8 @@ INSTALLATION AND BUILD
 
 TECHNICAL NOTES
 
-* The range is limited to 7 bits, allowing values from 0 to 127 (0x7F in hexadecimal).
-* The system uses FreeRTOS Queues to ensure thread-safe communication between the main task and the LED hardware agent.
-* Stack usage and heap statistics are monitored and printed to the serial console for debugging purposes.
+ The range is limited to 7 bits, allowing values from 0 to 127 (0x7F in hexadecimal).
+ The system uses FreeRTOS Queues to ensure thread-safe communication between the main task and the LED hardware agent.
+ Stack usage and heap statistics are monitored and printed to the serial console for debugging purposes.
 
 
