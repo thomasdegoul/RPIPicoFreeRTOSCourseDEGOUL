@@ -4,7 +4,6 @@ This project is a modified version of the original 4-LED binary counter demo by 
 
 Modified by: DEGOUL THOMAS
 
----
 OVERVIEW
 
 The program runs on the Raspberry Pi Pico using the FreeRTOS real-time operating system. It generates a random 7-bit integer every three seconds, converts it into a JSON string, and then decodes that string to light up the corresponding LEDs in binary format.
